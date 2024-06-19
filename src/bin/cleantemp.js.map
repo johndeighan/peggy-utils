@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "cleantemp.js",
+  "sourceRoot": "..\\..\\",
+  "sources": [
+    "src\\bin\\cleantemp.coffee"
+  ],
+  "names": [],
+  "mappings": "",
+  "sourcesContent": [
+    ""
+  ]
+}

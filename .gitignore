@@ -1,0 +1,15 @@
+logs/
+node_modules/
+typings/
+*.tsbuildinfo
+.npmrc
+/build
+/public
+/dist
+
+# dotenv environment variables file
+.env
+.env.test
+
+test/temp*.*
+/.svelte-kit

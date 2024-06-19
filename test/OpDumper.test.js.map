@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "OpDumper.test.js",
+  "sourceRoot": "..\\",
+  "sources": [
+    "test\\OpDumper.test.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAyB;AAEzB,OAAO,CAAA,OAAP,MAAA;;AACA,MAAM,CAAC,MAAP,CAAc,MAAd,EAAsB,GAAtB;;AACA,OAAO,IAAP,MAAA;;AAEA,IAAA,CAAK,QAAL,EAAe,CAAC,CAAD,CAAA,GAAA;AACf,MAAA;EAAC,QAAA,GAAW,IAAI,QAAJ,CAAa,OAAb;EACX,QAAQ,CAAC,GAAT,CAAa,QAAb;EACA,QAAQ,CAAC,GAAT,CAAa,QAAb;SACA,CAAC,CAAC,EAAF,CAAK,QAAQ,CAAC,QAAT,CAAA,CAAL,EAA0B,gBAA1B;AAJc,CAAf",
+  "sourcesContent": [
+    "# --- OpDumper.test.offee\n\nimport * as lib from '@jdeighan/peggy-utils/OpDumper'\nObject.assign(global, lib)\nimport test from 'ava'\n\ntest \"line 7\", (t) =>\n\topDumper = new OpDumper('dummy')\n\topDumper.out('line 1')\n\topDumper.out('line 2')\n\tt.is opDumper.contents(), \"line 1\\nline 2\"\n"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "ByteCodeWriter.test.js",
+  "sourceRoot": "..\\",
+  "sources": [
+    "test\\ByteCodeWriter.test.coffee"
+  ],
+  "names": [],
+  "mappings": "AAA+B;AAE/B,OAAO,CAAA,OAAP,MAAA;;AACA,MAAM,CAAC,MAAP,CAAc,MAAd,EAAsB,GAAtB;;AACA,OAAO,IAAP,MAAA;;AAEA,IAAA,CAAK,QAAL,EAAe,CAAC,CAAD,CAAA,GAAA;AACf,MAAA,cAAA,EAAA;EAAC,cAAA,GAAiB,IAAI,cAAJ,CAAmB,OAAnB;EACjB,cAAc,CAAC,MAAf,CAAsB;IACrB,IAAA,EAAM,SADe;IAErB,KAAA,EAAO,CACN,KADM;EAFc,CAAtB;EAMA,IAAA,GAAO,cAAc,CAAC,SAAf,CAAyB,EAAzB;SACP,CAAC,CAAC,SAAF,CAAY,IAAZ,EAAkB,CAAC,mBAAD,CAAlB;AATc,CAAf",
+  "sourcesContent": [
+    "# --- ByteCodeWriter.test.offee\n\nimport * as lib from '@jdeighan/peggy-utils/ByteCodeWriter'\nObject.assign(global, lib)\nimport test from 'ava'\n\ntest \"line 7\", (t) =>\n\tbyteCodeWriter = new ByteCodeWriter('dummy')\n\tbyteCodeWriter.setAST({\n\t\ttype: 'grammar'\n\t\trules: [\n\t\t\t'abc'\n\t\t\t]\n\t\t})\n\tinfo = byteCodeWriter.getOpInfo(35)\n\tt.deepEqual info, ['PUSH_EMPTY_STRING']\n\n"
+  ]
+}

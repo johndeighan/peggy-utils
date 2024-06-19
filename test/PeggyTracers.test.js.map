@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "PeggyTracers.test.js",
+  "sourceRoot": "..\\",
+  "sources": [
+    "test\\PeggyTracers.test.coffee"
+  ],
+  "names": [],
+  "mappings": "AAA6B;AAE7B,OAAO,CAAA,OAAP,MAAA;;AACA,MAAM,CAAC,MAAP,CAAc,MAAd,EAAsB,GAAtB;;AACA,OAAO,IAAP,MAAA;;AAEA,IAAA,CAAK,QAAL,EAAe,CAAC,CAAD,CAAA,GAAA;EACd,CAAC,CAAC,EAAF,CAAK,IAAA,CAAK,KAAL,EAAY,CAAZ,CAAL,EAAqB,UAArB;EACA,CAAC,CAAC,EAAF,CAAK,IAAA,CAAK,KAAL,EAAY,CAAZ,CAAL,EAAqB,UAArB;SACA,CAAC,CAAC,EAAF,CAAK,IAAA,CAAK,EAAL,EAAS,CAAT,CAAL,EAAkB,UAAlB;AAHc,CAAf",
+  "sourcesContent": [
+    "# --- PeggyTracers.test.offee\n\nimport * as lib from '@jdeighan/peggy-utils/PeggyTracers'\nObject.assign(global, lib)\nimport test from 'ava'\n\ntest \"line 7\", (t) =>\n\tt.is rpad('abc', 8), 'abc     '\n\tt.is lpad('abc', 8), '     abc'\n\tt.is zpad(23, 8), '00000023'\n"
+  ]
+}
