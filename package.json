@@ -1,6 +1,6 @@
 {
 	"name": "@jdeighan/peggy-utils",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"scripts": {
 		"build:coffee": "coffee -cmb --no-header .",
 		"build": "npm run build:coffee",
