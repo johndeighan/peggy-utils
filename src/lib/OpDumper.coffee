@@ -17,6 +17,13 @@ export class OpDumper
 
 	# ..........................................................
 
+	setStack: (stack) ->
+
+		@stack = stack
+		return
+
+	# ..........................................................
+
 	incLevel: () -> @level += 1
 	decLevel: () -> @level -= 1
 
@@ -30,8 +37,7 @@ export class OpDumper
 
 	outBC: (lByteCodes) ->
 
-		@out 'OPCODES:'
-		@out lByteCodes.map((x) => x.toString()).join(' ');
+		@out 'OPCODES:' + lByteCodes.map((x) => x.toString()).join(' ');
 		return
 
 	# ..........................................................

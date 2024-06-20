@@ -22,6 +22,11 @@ export var OpDumper = class OpDumper {
   }
 
   // ..........................................................
+  setStack(stack) {
+    this.stack = stack;
+  }
+
+  // ..........................................................
   incLevel() {
     return this.level += 1;
   }
@@ -37,8 +42,7 @@ export var OpDumper = class OpDumper {
 
   // ..........................................................
   outBC(lByteCodes) {
-    this.out('OPCODES:');
-    this.out(lByteCodes.map((x) => {
+    this.out('OPCODES:' + lByteCodes.map((x) => {
       return x.toString();
     }).join(' '));
   }
