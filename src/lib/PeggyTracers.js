@@ -9,13 +9,16 @@ import {
   assert,
   croak,
   range,
-  indented,
-  undented,
   isEmpty,
   nonEmpty,
   keys,
   escapeStr
-} from '@jdeighan/vllu';
+} from '@jdeighan/llutils';
+
+import {
+  indented,
+  undented
+} from '@jdeighan/llutils/indent';
 
 // ---------------------------------------------------------------------------
 export var rpad = (str, len, ch = ' ') => {
@@ -75,18 +78,11 @@ export var DefaultTracer = class DefaultTracer extends NullTracer {
   }
 
   log(event) {
-    var desc, locStr, location, result, rule, type;
+    var lParts, locStr, location, result, rule, type;
+    if (typeof console !== 'object') {
+      return;
+    }
     ({type, rule, location, result} = event);
-    desc = () => {
-      var cls, sub;
-      [cls, sub] = type.split('.');
-      switch (cls) {
-        case 'rule':
-          return `${sub} <${rule}>`;
-        default:
-          return type;
-      }
-    };
     locStr = () => {
       var e, ec, el, s, sc, sl;
       if (notdefined(location) || !isHash(location)) {
@@ -102,9 +98,12 @@ export var DefaultTracer = class DefaultTracer extends NullTracer {
       ec = zpad(e.column);
       return `${sl}:${sc}-${el}:${ec}`;
     };
-    if (typeof console === 'object') {
-      return console.log([locStr(location), '  '.repeat(this.level), rpad(desc(event), 12), result].join(' '));
+    lParts = [locStr(location), rpad(type, 12), '  '.repeat(this.level)];
+    if (type.startsWith('rule')) {
+      lParts.push(`<${rule}>`);
     }
+    lParts.push(JSON.stringify(result));
+    return lParts.join(' ');
   }
 
 };

@@ -1,6 +1,9 @@
 {
 	"name": "@jdeighan/peggy-utils",
 	"version": "1.0.1",
+	"bin": {
+		"cleantemp": "./src/bin/cleantemp.js"
+	},
 	"scripts": {
 		"build:coffee": "coffee -cmb --no-header .",
 		"build": "npm run build:coffee",
@@ -9,21 +12,18 @@
 	"keywords": [],
 	"author": "John Deighan",
 	"license": "MIT",
-	"description": "A undefined app",
+	"description": "Utilities to use with peggy parser",
 	"dependencies": {
-		"@jdeighan/vllu": "^1.0.3",
-		"deep-equal": "^2.2.3"
+		"@jdeighan/llutils": "^1.0.0",
+		"deep-equal": "^2.2.3",
+		"peggy": "file:../peggy"
 	},
 	"type": "module",
 	"exports": {
-		".": "./src/lib/ByteCodeWriter.js",
+		".": "./src/lib/PeggyTracers.js",
 		"./ByteCodeWriter": "./src/lib/ByteCodeWriter.js",
 		"./OpDumper": "./src/lib/OpDumper.js",
-		"./PeggyTracers": "./src/lib/PeggyTracers.js",
 		"./package.json": "./package.json"
-	},
-	"bin": {
-		"cleantemp": "./src/bin/cleantemp.js"
 	},
 	"devDependencies": {
 		"ava": "^6.1.3",

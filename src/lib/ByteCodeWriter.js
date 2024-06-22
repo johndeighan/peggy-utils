@@ -6,20 +6,30 @@ import {
   defined,
   notdefined,
   isString,
+  untabify,
   assert,
   croak,
   range,
+  pass
+} from '@jdeighan/llutils';
+
+import {
   indented,
   undented
-} from '@jdeighan/vllu';
+} from '@jdeighan/llutils/indent';
 
-// ---------------------------------------------------------------------------
+// pass = () =>
+
+  // ---------------------------------------------------------------------------
 export var ByteCodeWriter = class ByteCodeWriter {
   constructor(name1, hOptions = {}) {
     this.name = name1;
+    this.lRuleNames = [];
     this.hRules = {};
-    this.hCounts = {};
-    this.lOpcodes = undef;
+    // --- These are set when the AST is known
+    this.literals = undef;
+    this.expectations = undef;
+    // --- options
     this.detailed = hOptions.detailed;
   }
 
@@ -27,106 +37,117 @@ export var ByteCodeWriter = class ByteCodeWriter {
   setAST(ast) {
     assert(ast.type === 'grammar', "not a grammar");
     assert(ast.rules.length > 0, "no rules");
-    this.ast = ast;
+    this.literals = ast.literals;
+    this.expectations = ast.expectations;
   }
 
   // ..........................................................
-  getOpInfo(op) {
+  add(ruleName, lOpcodes) {
+    assert(typeof ruleName === 'string', "not a string");
+    assert(Array.isArray(lOpcodes), "not an array");
+    assert(!this.hRules[ruleName], `rule ${ruleName} already defined`);
+    this.lRuleNames.push(ruleName);
+    this.hRules[ruleName] = lOpcodes;
+  }
+
+  // ..........................................................
+  getOpInfo(op, pos) {
     switch (op) {
       case 35:
-        return ['PUSH_EMPTY_STRING'];
+        return ['PUSH_EMPTY_STRING', [], []];
       case 5:
-        return ['PUSH_CUR_POS'];
+        return ['PUSH_CUR_POS', [], []];
       case 1:
-        return ['PUSH_UNDEFINED'];
+        return ['PUSH_UNDEFINED', [], []];
       case 2:
-        return ['PUSH_NULL'];
+        return ['PUSH_NULL', [], []];
       case 3:
-        return ['PUSH_FAILED'];
+        return ['PUSH_FAILED', [], []];
       case 4:
-        return ['PUSH_EMPTY_ARRAY'];
+        return ['PUSH_EMPTY_ARRAY', [], []];
       case 6:
-        return ['POP'];
+        return ['POP', [], []];
       case 7:
-        return ['POP_CUR_POS'];
+        return ['POP_CUR_POS', [], []];
       case 8:
-        return ['POP_N', '/number'];
+        return ['POP_N', ['/'], []];
       case 9:
-        return ['NIP'];
+        return ['NIP', [], []];
       case 10:
-        return ['APPEND'];
+        return ['APPEND', [], []];
       case 11:
-        return ['WRAP', undef];
+        return ['WRAP', [''], []];
       case 12:
-        return ['TEXT'];
+        return ['TEXT', [], []];
       case 36:
-        return ['PLUCK', undef, undef, undef, 'p'];
+        return ['PLUCK', ['/', '/', '/', 'p'], []];
       case 13:
-        return ['IF', 'OK/block', 'FAIL/block'];
+        return ['IF', [], ['THEN', 'ELSE']];
       case 14:
-        return ['IF_ERROR', 'OK/block', 'FAIL/block'];
+        return ['IF_ERROR', [], ['THEN', 'ELSE']];
       case 15:
-        return ['IF_NOT_ERROR', 'OK/block', 'FAIL/block'];
+        return ['IF_NOT_ERROR', [], ['THEN', 'ELSE']];
       case 30:
-        return ['IF_LT', 'OK/block', 'FAIL/block'];
+        return ['IF_LT', [], ['THEN', 'ELSE']];
       case 31:
-        return ['IF_GE', 'OK/block', 'FAIL/block'];
+        return ['IF_GE', [], ['THEN', 'ELSE']];
       case 32:
-        return ['IF_LT_DYNAMIC', 'OK/block', 'FAIL/block'];
+        return ['IF_LT_DYNAMIC', [], ['THEN', 'ELSE']];
       case 33:
-        return ['IF_GE_DYNAMIC', 'OK/block', 'FAIL/block'];
+        return ['IF_GE_DYNAMIC', [], ['THEN', 'ELSE']];
       case 16:
-        return ['WHILE_NOT_ERROR', 'OK/block'];
+        return ['WHILE_NOT_ERROR', [], ['THEN']];
       case 17:
-        return ['MATCH_ANY', 'OK/block', 'FAIL/block'];
+        return ['MATCH_ANY', [], ['THEN', 'ELSE']];
       case 18:
-        return ['MATCH_STRING', '/literal', 'OK/block', 'FAIL/block'];
+        return ['MATCH_STRING', ['/lit'], ['THEN', 'ELSE']];
       case 19:
-        return ['MATCH_STRING_IC', '/literal', 'OK/block', 'FAIL/block'];
+        return ['MATCH_STRING_IC', ['/lit'], ['THEN', 'ELSE']];
       case 20:
-        return ['MATCH_CHAR_CLASS', '/class'];
+        return ['MATCH_CHAR_CLASS', ['/class'], []];
       case 21:
-        return ['ACCEPT_N', '/number'];
+        return ['ACCEPT_N', ['/num'], []];
       case 22:
-        return ['ACCEPT_STRING', '/literal'];
+        return ['ACCEPT_STRING', ['/lit'], []];
       case 23:
-        return ['FAIL', '/expectation'];
+        return ['FAIL', ['/expectation'], []];
       case 24:
-        return ['LOAD_SAVED_POS', 'pos/number'];
+        return ['LOAD_SAVED_POS', ['pos/num'], []];
       case 25:
-        return ['UPDATE_SAVED_POS', 'pos/number'];
+        return ['UPDATE_SAVED_POS', ['pos/num'], []];
       case 26:
-        return ['CALL'];
+        return ['CALL', [], []];
       case 27:
-        return ['RULE', '/rule'];
+        return ['RULE', ['/rule'], []];
       default:
-        return void 0;
+        return croak(`Unknown opcode: ${op} at pos ${pos}`);
     }
   }
 
   // ..........................................................
   argStr(arg, infoStr) {
     var hExpect, label, result, type, value;
-    if (infoStr === undef) {
+    if (infoStr === '/') {
       return arg.toString();
     }
     [label, type] = infoStr.split('/');
     switch (type) {
       case 'rule':
-        if ((typeof arg === 'number') && (arg < this.ast.rules.length)) {
-          result = `<${this.ast.rules[arg].name}>`;
+        if (arg < this.lRuleNames.length) {
+          result = `<${this.lRuleNames[arg]}>`;
         } else {
-          result = `<UNKNOWN RULE ${arg}>`;
+          result = `<#${arg}>`;
         }
         break;
-      case 'literal':
-        result = `'${this.ast.literals[arg]}'`;
+      case 'lit':
+        result = `'${this.literals[arg]}'`;
         break;
-      case 'number':
+      case 'num':
+      case 'i':
         result = arg.toString();
         break;
       case 'expectation':
-        hExpect = this.ast.expectations[arg];
+        hExpect = this.expectations[arg];
         ({type, value} = hExpect);
         switch (type) {
           case 'literal':
@@ -168,82 +189,81 @@ export var ByteCodeWriter = class ByteCodeWriter {
 
   // ..........................................................
   opStr(lOpcodes) {
-    var arg, i, infoStr, j, lArgDesc, lArgInfo, lArgs, lInfo, lLines, lSubOps, label, len, nOpcodes, name, numArgs, op, pos, type;
+    debugger;
+    var blockBase, blockLen, i, j, lArgDesc, lArgInfo, lArgs, lBlockInfo, lLines, lSubOps, label, len, name, numArgs, op, pos;
     lLines = [];
     pos = 0;
-    nOpcodes = lOpcodes.length;
-    while (pos < nOpcodes) {
+    while (pos < lOpcodes.length) {
       op = lOpcodes[pos];
       pos += 1;
-      lInfo = this.getOpInfo(op);
-      if (notdefined(lInfo)) {
-        lLines.push(`OPCODE ${op}`);
-        continue;
-      }
-      name = lInfo[0];
-      if (lInfo[1]) {
-        lArgInfo = lInfo.slice(1);
-      } else {
-        lArgInfo = [];
-      }
-      if (notdefined(lArgInfo)) {
-        lArgInfo = [];
-      }
+      [name, lArgInfo, lBlockInfo] = this.getOpInfo(op, pos);
       numArgs = lArgInfo.length;
-      lArgs = lOpcodes.slice(pos, pos + numArgs);
-      pos += numArgs;
-      lArgDesc = lArgs.map((arg, i) => {
-        return this.argStr(arg, lArgInfo[i]);
-      });
-      if (this.detailed) {
-        lLines.push(`(${op}) ${name}${' ' + lArgDesc.join(' ')}`);
+      if (numArgs === 0) {
+        if (this.detailed) {
+          lLines.push(`(${op}) ${name}`);
+        } else {
+          lLines.push(`${name}`);
+        }
       } else {
-        lLines.push(`${name}${' ' + lArgDesc.join(' ')}`);
-      }
-      for (i = j = 0, len = lArgs.length; j < len; i = ++j) {
-        arg = lArgs[i];
-        infoStr = lArgInfo[i];
-        if (notdefined(infoStr)) {
-          continue;
-        }
-        if (infoStr.includes('/')) {
-          [label, type] = infoStr.split('/');
-          if (type === 'block') {
-            lLines.push(indented(`[${label}]`));
-            // --- NOTE: arg is the length of the block in bytes
-            lSubOps = lOpcodes.slice(pos, pos + arg);
-            pos += arg;
-            lLines.push(indented(this.opStr(lSubOps), 2));
-          }
+        lArgs = lOpcodes.slice(pos, pos + numArgs);
+        pos += numArgs;
+        lArgDesc = lArgs.map((arg, i) => {
+          return this.argStr(arg, lArgInfo[i]);
+        });
+        if (this.detailed) {
+          lLines.push(`(${op}) ${name} ${lArgDesc.join(' ')}`);
+        } else {
+          lLines.push(`${name} ${lArgDesc.join(' ')}`);
         }
       }
+      blockBase = pos + lBlockInfo.length;
+      for (i = j = 0, len = lBlockInfo.length; j < len; i = ++j) {
+        label = lBlockInfo[i];
+        blockLen = lOpcodes[pos];
+        pos += 1;
+        switch (label) {
+          case 'ELSE':
+            if (blockLen > 0) {
+              lLines.push('ELSE');
+            }
+            break;
+          case 'THEN':
+            pass();
+            break;
+          default:
+            croak(`Bad block label: ${label}`);
+        }
+        lSubOps = lOpcodes.slice(blockBase, blockBase + blockLen);
+        lLines.push(indented(this.opStr(lSubOps)));
+        blockBase += blockLen;
+      }
+      pos = blockBase;
     }
     return lLines.join("\n");
   }
 
   // ..........................................................
-  add(ruleName, lOpcodes) {
-    assert(typeof ruleName === 'string', "not a string");
-    assert(Array.isArray(lOpcodes), "not an array");
-    assert(!this.hRules[ruleName], `rule ${ruleName} already defined`);
-    this.hRules[ruleName] = lOpcodes;
-  }
-
-  // ..........................................................
-  write() {
-    var fileName, j, lOpcodes, lParts, len, ref, ruleName;
+  getBlock() {
+    var block, j, lOpcodes, lParts, len, ref, ruleName;
     lParts = [];
     ref = Object.keys(this.hRules);
     for (j = 0, len = ref.length; j < len; j++) {
       ruleName = ref[j];
-      lParts.push(`${ruleName}:`);
+      lParts.push(`<${ruleName}>`);
       lOpcodes = this.hRules[ruleName];
-      lParts.push(indented(this.opStr(lOpcodes)));
+      block = this.opStr(lOpcodes).trimEnd();
+      if (block !== '') {
+        lParts.push(indented(block));
+      }
       lParts.push('');
     }
-    fileName = `./${this.name}.bytecodes.txt`;
-    console.log(`Writing bytecodes to ${fileName}`);
-    fs.writeFileSync(fileName, lParts.join("\n"));
+    return lParts.join("\n").trimEnd();
+  }
+
+  // ..........................................................
+  writeTo(filePath) {
+    console.log(`Writing bytecodes to ${filePath}`);
+    fs.writeFileSync(filePath, this.getBlock());
   }
 
 };

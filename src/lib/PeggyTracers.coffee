@@ -2,9 +2,10 @@
 
 import {
 	undef, defined, notdefined, isString, isArray, isHash,
-	assert, croak, range, indented, undented,
+	assert, croak, range,
 	isEmpty, nonEmpty, keys, escapeStr,
-	} from '@jdeighan/vllu'
+	} from '@jdeighan/llutils'
+import {indented, undented} from '@jdeighan/llutils/indent'
 
 # ---------------------------------------------------------------------------
 
@@ -61,14 +62,9 @@ export class DefaultTracer extends NullTracer
 
 	log: (event) ->
 
+		if (typeof console != 'object')
+			return
 		{type, rule, location, result} = event
-		desc = () =>
-			[cls, sub] = type.split('.')
-			switch cls
-				when 'rule'
-					return "#{sub} <#{rule}>"
-				else
-					return type
 
 		locStr = () =>
 			if notdefined(location) || !isHash(location)
@@ -80,13 +76,15 @@ export class DefaultTracer extends NullTracer
 			ec = zpad(e.column)
 			return "#{sl}:#{sc}-#{el}:#{ec}"
 
-		if (typeof console == 'object')
-			console.log [
-				locStr(location)
-				'  '.repeat(@level)
-				rpad(desc(event), 12)
-				result
-				].join(' ')
+		lParts = [
+			locStr(location)
+			rpad(type, 12)
+			'  '.repeat(@level)
+			]
+		if type.startsWith('rule')
+			lParts.push "<#{rule}>"
+		lParts.push JSON.stringify(result)
+		return lParts.join(' ')
 
 # ---------------------------------------------------------------------------
 

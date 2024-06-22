@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "parse.js",
+  "sourceRoot": "..\\..\\",
+  "sources": [
+    "src\\bin\\parse.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAc;AAAA,IAAA,CAAA,EAAA,CAAA,EAAA,GAAA,EAAA,IAAA,EAAA,KAAA,EAAA,MAAA,EAAA;;AAEd,OAAA;EAAQ,aAAR;CAAA,MAAA;;AACA,CAAC,CAAD,EAAI,CAAJ,EAAO,IAAP,EAAa,GAAb,CAAA,GAAoB,OAAO,CAAC;;AAC5B,CAAA,CAAC,KAAD,CAAA,GAAU,CAAA,MAAM,MAAA,CAAO,CAAA,MAAA,CAAA,CAAS,IAAT,CAAA,GAAA,CAAP,CAAN,CAAV;;AAEA;;;;;;;;;EAUC,MAAA,GAAS,KAAA,CAAM,GAAN,EAAW;IAAC,MAAA,EAAQ;EAAT,CAAX;EACT,OAAO,CAAC,GAAR,CAAY,CAAA,QAAA,CAAA,CAAW,IAAI,CAAC,SAAL,CAAe,MAAf,CAAX,CAAA,CAAZ,EAXD;CAYA,aAAA;EAAM;EACL,OAAO,CAAC,GAAR,CAAY,cAAZ;EACA,OAAO,CAAC,GAAR,CAAY,GAAZ,EAFD",
+  "sourcesContent": [
+    "# parse.coffee\r\n\r\nimport {DefaultTracer} from '@jdeighan/peggy-utils'\r\n[a, b, name, str] = process.argv\r\n{parse} = await import(\"../../#{name}.js\")\r\n\r\ntry\r\n\t# --- Available options:\r\n\t#        grammerSource\r\n\t#        peg$currPos\r\n\t#        peg$maxFailExpected\r\n\t#        peg$silentFails\r\n\t#        tracer\r\n\t#        startRule\r\n\t#        peg$library\r\n\r\n\tresult = parse(str, {tracer: DefaultTracer})\r\n\tconsole.log \"RESULT: #{JSON.stringify(result)}\"\r\ncatch err\r\n\tconsole.log \"PARSE FAILED\"\r\n\tconsole.dir err\r\n"
+  ]
+}
